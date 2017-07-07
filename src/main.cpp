@@ -12,13 +12,23 @@
 const unsigned int WIDTH = 1920;
 const unsigned int HEIGHT = 1080;
 
-void key_callback_camera_movement(GLFWwindow *window);
+void key_callback_camera_movement(GLFWwindow *window, struct BBox positions[]);
 void mouse_callback(GLFWwindow *window, double xposition, double yposition);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void key_callback_close_window(GLFWwindow *window);
+bool collision_callback(struct BBox positions[], glm::vec3 cameraFuturePosition);
 
-glm::vec3 cameraPosition = glm::vec3(0.0f,0.0f,3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);
+struct BBox{
+
+    float leftPosition_X;
+    float leftPosition_Z;
+    float rightPosition_X;
+    float rightPosition_Z;
+
+};
+
+glm::vec3 cameraPosition = glm::vec3(0.0f,0.25f,-0.5f);
+glm::vec3 cameraFront = glm::vec3(1.0f,0.0f,0.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
 float deltaTime = 0.0f;
 float timeLastFrame = 0.0f;
@@ -31,6 +41,8 @@ float pitch = 0.0f;
 float yaw = -90.0f;
 bool firstMouse = true;
 float fov = 45.0f;       // fov = field of view
+
+//dint id_object;    // para a uniform do fragment shader
 
 const char *vertexShaderSource = "#version 330 core \n"
 "layout (location = 0) in vec3 position; \n"
@@ -52,10 +64,19 @@ const char *fragmentShaderSource = "#version 330 core\n"
 //"in vec3 finalColor; \n"
 "in vec2 finalTex;   \n"
 "out vec4 FragColor; \n"
-"                    \n"
 "uniform sampler2D TEX; \n"
+"uniform int id_object; \n"
 "void main(){ \n"
-"    FragColor = texture(TEX, finalTex); \n" //* vec4(finalColor.x+0.5, finalColor.y+0.5, finalColor.z+0.5, 1.0f); \n"
+"\n"
+"    if(id_object == 0) { \n"      // se for muro
+"       FragColor = vec4(0.0f,0.0f,0.0f,1.0f); \n"
+"    }"
+"\n"
+"    else if(id_object == 1) { \n"
+"       FragColor = vec4(1.0f,1.0f,1.0f,1.0f); \n"
+"    }"
+"\n"
+"    FragColor += texture(TEX, finalTex) * vec4(0.1f,0.1f,0.1f,1.0f); \n" //* vec4(finalColor.x+0.5, finalColor.y+0.5, finalColor.z+0.5, 1.0f); \n"
 "}\0";
 
 int main() {
@@ -80,7 +101,7 @@ int main() {
     }
 
     ///calbacks signature here...
-    key_callback_camera_movement(window);
+    //key_callback_camera_movement(window);
     key_callback_close_window(window);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -111,186 +132,187 @@ int main() {
 
     float vertices[] = {
 
-    //traseira
-       -0.5f, -0.5f, -0.01f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.01f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.01f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.01f,  1.0f, 1.0f,
-       -0.5f,  0.5f, -0.01f,  0.0f, 1.0f,
-       -0.5f, -0.5f, -0.01f,  0.0f, 0.0f,
+    //face traseira
+       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.075f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f,
 
-       -0.5f, -0.5f,  0.01f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.01f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.01f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.01f,  1.0f, 1.0f,
-       -0.5f,  0.5f,  0.01f,  0.0f, 1.0f,
-       -0.5f, -0.5f,  0.01f,  0.0f, 0.0f,
+    //face da frente
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 1.0f,
+       -0.5f,  0.5f,  0.075f,  0.0f, 1.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
 
-       -0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
-       -0.5f,  0.5f, -0.01f,  1.0f, 1.0f,
-       -0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
-       -0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
-       -0.5f, -0.5f,  0.01f,  0.0f, 0.0f,
-       -0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+       -0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
 
-        0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.01f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.01f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
 
-       -0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.01f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.01f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.01f,  1.0f, 0.0f,
-       -0.5f, -0.5f,  0.01f,  0.0f, 0.0f,
-       -0.5f, -0.5f, -0.01f,  0.0f, 1.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.075f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
 
-       -0.5f,  0.5f, -0.01f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.01f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.01f,  1.0f, 0.0f,
-       -0.5f,  0.5f,  0.01f,  0.0f, 0.0f,
-       -0.5f,  0.5f, -0.01f,  0.0f, 1.0f
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  0.0f, 0.0f,
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f
 };
 
 float vertices2[] = {
 
     //traseira
-       -0.01f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.01f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.01f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.01f,  0.5f, -0.5f,  1.0f, 1.0f,
-       -0.01f,  0.5f, -0.5f,  0.0f, 1.0f,
-       -0.01f, -0.5f, -0.5f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f,
+        0.075f, -0.5f, -0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-       -0.01f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.01f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.01f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.01f,  0.5f,  0.5f,  1.0f, 1.0f,
-       -0.01f,  0.5f,  0.5f,  0.0f, 1.0f,
-       -0.01f, -0.5f,  0.5f,  0.0f, 0.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 1.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 1.0f,
+       -0.075f,  0.5f,  0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-       -0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
-       -0.01f,  0.5f, -0.5f,  1.0f, 1.0f,
-       -0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
-       -0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
-       -0.01f, -0.5f,  0.5f,  0.0f, 0.0f,
-       -0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+       -0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-        0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.01f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.01f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-       -0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.01f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.01f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.01f, -0.5f,  0.5f,  1.0f, 0.0f,
-       -0.01f, -0.5f,  0.5f,  0.0f, 0.0f,
-       -0.01f, -0.5f, -0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.075f, -0.5f, -0.5f,  1.0f, 1.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-       -0.01f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.01f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.01f,  0.5f,  0.5f,  1.0f, 0.0f,
-       -0.01f,  0.5f,  0.5f,  0.0f, 0.0f,
-       -0.01f,  0.5f, -0.5f,  0.0f, 1.0f
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  0.0f, 0.0f,
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
 float vertices3[] = {
 
     //traseira
-       -0.1f, -0.5f, -0.25f,  0.0f, 0.0f,
-        0.1f, -0.5f, -0.25f,  1.0f, 0.0f,
-        0.1f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.1f,  0.5f, -0.25f,  1.0f, 1.0f,
-       -0.1f,  0.5f, -0.25f,  0.0f, 1.0f,
-       -0.1f, -0.5f, -0.25f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f,
+        0.075f, -0.5f, -0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f,
 
-       -0.1f, -0.5f,  0.25f,  0.0f, 0.0f,
-        0.1f, -0.5f,  0.25f,  1.0f, 0.0f,
-        0.1f,  0.5f,  0.25f,  1.0f, 1.0f,
-        0.1f,  0.5f,  0.25f,  1.0f, 1.0f,
-       -0.1f,  0.5f,  0.25f,  0.0f, 1.0f,
-       -0.1f, -0.5f,  0.25f,  0.0f, 0.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 1.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 1.0f,
+       -0.075f,  0.5f,  0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
 
-       -0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
-       -0.1f,  0.5f, -0.25f,  1.0f, 1.0f,
-       -0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
-       -0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
-       -0.1f, -0.5f,  0.25f,  0.0f, 0.0f,
-       -0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+       -0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
 
-        0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
-        0.1f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.1f, -0.5f,  0.25f,  0.0f, 0.0f,
-        0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
+        0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+        0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+        0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
 
-       -0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.1f, -0.5f, -0.25f,  1.0f, 1.0f,
-        0.1f, -0.5f,  0.25f,  1.0f, 0.0f,
-        0.1f, -0.5f,  0.25f,  1.0f, 0.0f,
-       -0.1f, -0.5f,  0.25f,  0.0f, 0.0f,
-       -0.1f, -0.5f, -0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+        0.075f, -0.5f, -0.25f,  1.0f, 1.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
 
-       -0.1f,  0.5f, -0.25f,  0.0f, 1.0f,
-        0.1f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
-        0.1f,  0.5f,  0.25f,  1.0f, 0.0f,
-       -0.1f,  0.5f,  0.25f,  0.0f, 0.0f,
-       -0.1f,  0.5f, -0.25f,  0.0f, 1.0f
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  0.0f, 0.0f,
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f
 };
 
  float vertices4[] = {
 
     //traseira
        -40.5f, -0.01f, -40.5f,  0.0f, 0.0f,
-        40.5f, -0.01f, -40.5f,  1.0f, 0.0f,
-        40.5f,  0.01f, -40.5f,  1.0f, 1.0f,
-        40.5f,  0.01f, -40.5f,  1.0f, 1.0f,
-       -40.5f,  0.01f, -40.5f,  0.0f, 1.0f,
+        40.5f, -0.01f, -40.5f,  100.0f, 0.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f,
        -40.5f, -0.01f, -40.5f,  0.0f, 0.0f,
 
        -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-        40.5f, -0.01f,  40.5f,  1.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  1.0f, 1.0f,
-        40.5f,  0.01f,  40.5f,  1.0f, 1.0f,
-       -40.5f,  0.01f,  40.5f,  0.0f, 1.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 100.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 100.0f,
+       -40.5f,  0.01f,  40.5f,  0.0f, 100.0f,
        -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
 
-       -40.5f,  0.01f,  40.5f,  1.0f, 0.0f,
-       -40.5f,  0.01f, -40.5f,  1.0f, 1.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
+       -40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
+       -40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
        -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f,  0.0f,  40.5f,  1.0f, 0.0f,
+       -40.5f,  0.0f,  40.5f,  100.0f, 0.0f,
 
-        40.5f,  0.01f,  40.5f,  1.0f, 0.0f,
-        40.5f,  0.01f, -40.5f,  1.0f, 1.0f,
-        40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
-        40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
+        40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
+        40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
         40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  1.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
 
-       -40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
-        40.5f, -0.01f, -40.5f,  1.0f, 1.0f,
-        40.5f, -0.01f,  40.5f,  1.0f, 0.0f,
-        40.5f, -0.01f,  40.5f,  1.0f, 0.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
+        40.5f, -0.01f, -40.5f,  100.0f, 100.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
        -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 1.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
 
-       -40.5f,  0.01f, -40.5f,  0.0f, 1.0f,
-        40.5f,  0.01f, -40.5f,  1.0f, 1.0f,
-        40.5f,  0.01f,  40.5f,  1.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  1.0f, 0.0f,
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
        -40.5f,  0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f,  0.01f, -40.5f,  0.0f, 1.0f
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f
 };
 
     /*
@@ -418,7 +440,7 @@ float vertices3[] = {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
 
     int width, height, nrChannels;
-    const std::string filename("C://Users//paulo//Desktop//Trabalho Final - Backup 4//brickWall.jpg");
+    const std::string filename("C://Users//paulo//Desktop//Maze//brickWall.jpg");
     unsigned char *data = stbi_load(filename.c_str(),&width, &height, &nrChannels, 0);
 
     if(!data)
@@ -430,6 +452,28 @@ float vertices3[] = {
     stbi_image_free(data);
 
     // definição da texture do chão   TextureGround
+
+    unsigned int TextureGround;
+    glGenTextures(1,&TextureGround);
+    glBindTexture(GL_TEXTURE_2D, TextureGround);
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);       //texture wrapping
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
+
+    int width2, height2, nrChannels2;
+    const std::string filename2("C://Users//paulo//Desktop//Maze//greenGrass.jpg");
+    unsigned char *data2 = stbi_load(filename2.c_str(),&width2, &height2, &nrChannels2, 0);
+
+    if(!data2)
+        std::cout << "Failed to load texture!";
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width2,height2,0,GL_RGB,GL_UNSIGNED_BYTE,data2);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data2);
 
     ///textures end
 
@@ -520,12 +564,66 @@ float vertices3[] = {
         glm::vec3(7.5f, 0.0f, -7.0f),
         glm::vec3(7.5f, 0.0f, -8.0f),  // quarta parede externa
         glm::vec3(4.0f, 0.0f, -1.5f),
-        glm::vec3(6.0f, 0.0f, -4.5f),  // 80 até aqui
+        glm::vec3(3.4f, 0.0f, -3.5f ),
+        glm::vec3(1.4f, 0.0f, -4.5f),
+        glm::vec3(6.0f, 0.0f, -7.5f),
+        glm::vec3(6.0f, 0.0f, -4.5f),  // 83 até aqui
         glm::vec3(4.0f, 0.0f, -0.25f),
         glm::vec3(5.0f, 0.0f, -0.75f),
         glm::vec3(0.5f, 0.0f, -5.75f),
-        glm::vec3(5.6f, 0.0f, -5.75f)
+        glm::vec3(5.6f, 0.0f, -5.75f),
+        glm::vec3(5.0f, 0.0f, -6.75f),
+        glm::vec3(5.8f, 0.0f, -6.25f)
     };
+
+    // colission
+    struct BBox modelPositions[89];
+    glm::vec4 leftPointVertices = glm::vec4(-0.63f, -0.5f,  0.16f, 1.0f);   // leftPointVertices.x
+    glm::vec4 rightPointVertices = glm::vec4(0.63f,  0.5f, -0.16f, 1.0f);   //59
+    glm::vec4 leftPointVertices2 = glm::vec4(-0.16f, -0.5f,  0.63f, 1.0f);
+    glm::vec4 rightPointVertices2 = glm::vec4(0.16f,  0.5f, -0.63f, 1.0f);  // 83
+    glm::vec4 leftPointVertices3 = glm::vec4(-0.16f, -0.5f,  0.40f, 1.0f);
+    glm::vec4 rightPointVertices3 = glm::vec4(0.16f,  0.5f, -0.40f, 1.0f);  // 89
+
+    glm::vec4 result;
+
+    for(int i=0; i<59; i++) {
+        glm::mat4 model;
+        model = glm::translate(model, differentPositions[i]);
+        result = model * leftPointVertices;
+        modelPositions[i].leftPosition_X = result.x;
+        modelPositions[i].leftPosition_Z = result.z;
+
+        result = model * rightPointVertices;
+        modelPositions[i].rightPosition_X = result.x;
+        modelPositions[i].rightPosition_Z = result.z;
+    }
+
+    for(int i=59; i<83; i++) {
+        glm::mat4 model;
+        model = glm::translate(model, differentPositions[i]);
+        result = model * leftPointVertices2;
+        modelPositions[i].leftPosition_X = result.x;
+        modelPositions[i].leftPosition_Z = result.z;
+
+        result = model * rightPointVertices2;
+        modelPositions[i].rightPosition_X = result.x;
+        modelPositions[i].rightPosition_Z = result.z;
+    }
+
+    for(int i=83; i<89; i++) {
+        glm::mat4 model;
+        model = glm::translate(model, differentPositions[i]);
+        result = model * leftPointVertices3;
+        modelPositions[i].leftPosition_X = result.x;
+        modelPositions[i].leftPosition_Z = result.z;
+
+        result = model * rightPointVertices3;
+        modelPositions[i].rightPosition_X = result.x;
+        modelPositions[i].rightPosition_Z = result.z;
+    }
+
+    // modelPositions estão os valores
 
     while(!glfwWindowShouldClose(window)) {
 
@@ -535,9 +633,9 @@ float vertices3[] = {
 
         //processa input
         key_callback_close_window(window);
-        key_callback_camera_movement(window);
+        key_callback_camera_movement(window, modelPositions);
 
-        glClearColor(0.0f, 0.8f, 0.8f, 1.0f);   // background color
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);   // background color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       //limpamos a cada iteração o buffer de cor final e também do de profundidade
 
         ///rendering here...
@@ -565,6 +663,8 @@ float vertices3[] = {
         // com x, por fim, dá o vetor y da câmera. Essa função lookAt faz tudo isso para nós, e ainda podemos especificar o ponto alvo da câmera.
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 
+        //glUniform1i(id_object,0);    // passa o id_object do muro (ver fragment shader)
+
         glBindVertexArray(VAO);
         for(int i = 0; i < 59; i++) {
             glm::mat4 model;
@@ -578,7 +678,7 @@ float vertices3[] = {
         glBindVertexArray(0);
 
         glBindVertexArray(VAO2);
-        for(int i=59; i<80; i++) {
+        for(int i=59; i<83; i++) {
             glm::mat4 model;
             model = glm::translate(model, differentPositions[i]);
             //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(140.0f), glm::vec3(0.5f,1.0f,0.5f));
@@ -590,7 +690,7 @@ float vertices3[] = {
         glBindVertexArray(0);
 
         glBindVertexArray(VAO3);
-        for(int i=80; i<84; i++) {
+        for(int i=83; i<89; i++) {
             glm::mat4 model;
             model = glm::translate(model, differentPositions[i]);
             //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(140.0f), glm::vec3(0.5f,1.0f,0.5f));
@@ -601,6 +701,11 @@ float vertices3[] = {
 
         glBindVertexArray(0);
 
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, TextureGround);
+
+        //glUniform1i(id_object, 1);    // passa o id do chão  (ver fragment shader)
+
         glBindVertexArray(VAO4);
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f));
@@ -609,6 +714,7 @@ float vertices3[] = {
         glDrawArrays(GL_TRIANGLES,0,36);
 
         glBindVertexArray(VAO4);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         ///rendering end here...
         glfwSwapBuffers(window);
@@ -623,17 +729,47 @@ float vertices3[] = {
 
 ///////////////////////////////////////IMPLEMENTAÇÃO DE FUNÇÕES////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void key_callback_camera_movement(GLFWwindow *window) {
+void key_callback_camera_movement(GLFWwindow *window, struct BBox positions[]) {
 
-    float cameraSpeed = 3.5f * deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPosition += cameraSpeed * cameraFront;
-    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPosition -= cameraSpeed * cameraFront;
-    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    float cameraSpeed = 1.0f * deltaTime;
+    glm::vec3 cameraFuturePosition = cameraPosition;
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        cameraFuturePosition += cameraSpeed * cameraFront;
+        if(!collision_callback(positions, cameraFuturePosition))
+            cameraPosition += cameraSpeed * cameraFront;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        cameraFuturePosition -= cameraSpeed * cameraFront;
+        if(!collision_callback(positions, cameraFuturePosition))
+            cameraPosition -= cameraSpeed * cameraFront;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cameraFuturePosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if(!collision_callback(positions, cameraFuturePosition))
+            cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cameraFuturePosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if(!collision_callback(positions, cameraFuturePosition))
+            cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
+}
+
+bool collision_callback(struct BBox positions[], glm::vec3 cameraFuturePosition) {
+
+    for(int i=0; i<89; i++) {
+        if(cameraFuturePosition.y >= 1.0f)
+            return false;                 // para poder andar por cima
+        if((cameraFuturePosition.x >= positions[i].leftPosition_X && cameraFuturePosition.x <= positions[i].rightPosition_X) && (cameraFuturePosition.z <= positions[i].leftPosition_Z && cameraFuturePosition.z >= positions[i].rightPosition_Z)) {
+            return true;
+        }
+    }
+
+    return false;
+
 }
 
 void mouse_callback(GLFWwindow *window, double currentXposition, double currentYposition) {   //x e y representam a posição atual do mouse
@@ -654,7 +790,7 @@ void mouse_callback(GLFWwindow *window, double currentXposition, double currentY
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
     yaw += xoffset;
-    pitch += yoffset;    // atualizamos os valores de pitch e yaw
+    // pitch += yoffset;    // atualizamos os valores de pitch e yaw
 
     //agora limitamos ao usuário olhar para cima até 89 graus e -89 graus (quando chegamos em 90 e -90, a visão tende a se inverter e ficar estranha)
     if(pitch > 89.0f)
