@@ -48,7 +48,9 @@ const char *vertexShaderSource = "#version 330 core \n"
 "layout (location = 0) in vec3 position; \n"
 //"layout (location = 1) in vec3 inColor; \n"
 "layout (location = 1) in vec2 inTex; \n"
+"layout (location = 2) in vec3 normalVec; \n"
 //"out vec3 finalColor; \n"
+"out vec3 normal; \n"
 "out vec2 finalTex; \n"
 "\n"
 "uniform mat4 modelShader; \n"
@@ -56,6 +58,7 @@ const char *vertexShaderSource = "#version 330 core \n"
 "uniform mat4 projectionShader; \n"
 "void main(){ \n"
 "   gl_Position = projectionShader * viewShader * modelShader * vec4(position.x, position.y, position.z, 1.0); \n"
+"   normal = normalVec; \n"
 //"   finalColor = inColor; \n"
 "   finalTex = inTex; \n"
 "}\0";
@@ -63,8 +66,10 @@ const char *vertexShaderSource = "#version 330 core \n"
 const char *fragmentShaderSource = "#version 330 core\n"
 //"in vec3 finalColor; \n"
 "in vec2 finalTex;   \n"
+"in vec3 normal;     \n"
 "out vec4 FragColor; \n"
 "uniform sampler2D TEX; \n"
+"uniform vec3 lightPosition; \n"
 "uniform int id_object; \n"
 "void main(){ \n"
 "\n"
@@ -132,187 +137,186 @@ int main() {
 
     float vertices[] = {
 
-    //face traseira
-       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.075f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
-       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f,
-       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f,
+    //faces do "cubo"
 
-    //face da frente
-       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.075f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.075f,  1.0f, 1.0f,
-       -0.5f,  0.5f,  0.075f,  0.0f, 1.0f,
-       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
+    //  x       y       z       u     v     normal(x,y,z) pré-computadas (pois sabemos o formato geométrico do modelo de antemão)
+       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.5f, -0.5f, -0.075f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
-       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
-       -0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
-       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
-       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
-       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
-       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.5f,  0.5f,  0.075f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.5f,  0.5f, -0.075f,  1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.075f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.075f,  1.0f, 0.0f,
-       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f,
-       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.075f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.075f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f,  0.075f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.075f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.075f,  1.0f, 0.0f,
-       -0.5f,  0.5f,  0.075f,  0.0f, 0.0f,
-       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, -0.075f,  1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f,  0.075f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.5f, -0.5f,  0.075f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.5f, -0.5f, -0.075f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.075f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.5f,  0.5f,  0.075f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.5f,  0.5f,  0.075f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.5f,  0.5f, -0.075f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f
 };
 
 float vertices2[] = {
 
-    //traseira
-       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.075f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
-       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f,
-       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.075f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
-       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.075f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.075f,  0.5f,  0.5f,  1.0f, 1.0f,
-       -0.075f,  0.5f,  0.5f,  0.0f, 1.0f,
-       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.075f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
-       -0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
-       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
-       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
-       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
-       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.075f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.075f, -0.5f,  0.5f,  1.0f, 0.0f,
-       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f,
-       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.075f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.075f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
 
-       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.075f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.075f,  0.5f,  0.5f,  1.0f, 0.0f,
-       -0.075f,  0.5f,  0.5f,  0.0f, 0.0f,
-       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.075f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.075f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f
 };
 
 float vertices3[] = {
 
-    //traseira
-       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f,
-        0.075f, -0.5f, -0.25f,  1.0f, 0.0f,
-        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
-       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f,
-       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.075f, -0.5f, -0.25f,  1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
-       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
-        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
-        0.075f,  0.5f,  0.25f,  1.0f, 1.0f,
-        0.075f,  0.5f,  0.25f,  1.0f, 1.0f,
-       -0.075f,  0.5f,  0.25f,  0.0f, 1.0f,
-       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.075f,  0.5f,  0.25f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
-       -0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
-       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
-       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
-       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
-       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f,  0.5f, -0.25f,  1.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
-        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
-        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f, -0.25f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f, -0.25f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.075f, -0.5f,  0.25f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
-        0.075f, -0.5f, -0.25f,  1.0f, 1.0f,
-        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
-        0.075f, -0.5f,  0.25f,  1.0f, 0.0f,
-       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f,
-       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f, -0.25f,  1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        0.075f, -0.5f,  0.25f,  1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.075f, -0.5f,  0.25f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -0.075f, -0.5f, -0.25f,  0.0f, 1.0f, 0.0f, -1.0f, 0.0f,
 
-       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f,
-        0.075f,  0.5f, -0.25f,  1.0f, 1.0f,
-        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
-        0.075f,  0.5f,  0.25f,  1.0f, 0.0f,
-       -0.075f,  0.5f,  0.25f,  0.0f, 0.0f,
-       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f, -0.25f,  1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.075f,  0.5f,  0.25f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.075f,  0.5f,  0.25f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -0.075f,  0.5f, -0.25f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f
 };
 
  float vertices4[] = {
 
     //traseira
-       -40.5f, -0.01f, -40.5f,  0.0f, 0.0f,
-        40.5f, -0.01f, -40.5f,  100.0f, 0.0f,
-        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
-        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
-       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 0.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        40.5f, -0.01f, -40.5f,  100.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f, 0.0f, 0.0f, -1.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f, 0.0f, 0.0f, -1.0f,
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f, 0.0f, 0.0f, -1.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 
-       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  100.0f, 100.0f,
-        40.5f,  0.01f,  40.5f,  100.0f, 100.0f,
-       -40.5f,  0.01f,  40.5f,  0.0f, 100.0f,
-       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
+       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 100.0f, 0.0f, 0.0f, 1.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 100.0f, 0.0f, 0.0f, 1.0f,
+       -40.5f,  0.01f,  40.5f,  0.0f, 100.0f, 0.0f, 0.0f, 1.0f,
+       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-       -40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
-       -40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
-       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f,  0.0f,  40.5f,  100.0f, 0.0f,
+       -40.5f,  0.01f,  40.5f,  100.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -40.5f,  0.01f, -40.5f,  100.0f, 100.0f, -1.0f, 0.0f, 0.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f, -1.0f, 0.0f, 0.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f, -1.0f, 0.0f, 0.0f,
+       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -40.5f,  0.0f,  40.5f,  100.0f, 0.0f, -1.0f, 0.0f, 0.0f,
 
-        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
-        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
-        40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
-        40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
-        40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f, 1.0f, 0.0f, 0.0f,
+        40.5f, -0.01f, -40.5f,  0.0f, 100.0f, 1.0f, 0.0f, 0.0f,
+        40.5f, -0.01f, -40.5f,  0.0f, 100.0f, 1.0f, 0.0f, 0.0f,
+        40.5f, -0.01f,  40.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
-        40.5f, -0.01f, -40.5f,  100.0f, 100.0f,
-        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
-        40.5f, -0.01f,  40.5f,  100.0f, 0.0f,
-       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f, 0.0f, -1.0f, 0.0f,
+        40.5f, -0.01f, -40.5f,  100.0f, 100.0f, 0.0f, -1.0f, 0.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        40.5f, -0.01f,  40.5f,  100.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -40.5f, -0.01f,  40.5f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -40.5f, -0.01f, -40.5f,  0.0f, 100.0f, 0.0f, -1.0f, 0.0f,
 
-       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f,
-        40.5f,  0.01f, -40.5f,  100.0f, 100.0f,
-        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
-        40.5f,  0.01f,  40.5f,  100.0f, 0.0f,
-       -40.5f,  0.01f,  40.5f,  0.0f, 0.0f,
-       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f, 0.0f, 1.0f, 0.0f,
+        40.5f,  0.01f, -40.5f,  100.0f, 100.0f, 0.0f, 1.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        40.5f,  0.01f,  40.5f,  100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -40.5f,  0.01f,  40.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -40.5f,  0.01f, -40.5f,  0.0f, 100.0f, 0.0f, 1.0f, 0.0f
 };
 
     /*
@@ -335,7 +339,7 @@ float vertices3[] = {
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);     //no EBO, colocamos os indices
 
     //positions
-    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,5*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
+    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,8*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
     glEnableVertexAttribArray(0);
 
     //colors
@@ -343,8 +347,11 @@ float vertices3[] = {
     //glEnableVertexAttribArray(1);
 
     //texture
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(5*sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -361,7 +368,7 @@ float vertices3[] = {
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);     //no EBO, colocamos os indices
 
     //positions
-    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,5*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
+    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,8*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
     glEnableVertexAttribArray(0);
 
     //colors
@@ -369,8 +376,11 @@ float vertices3[] = {
     //glEnableVertexAttribArray(1);
 
     //texture
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(5*sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -387,7 +397,7 @@ float vertices3[] = {
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);     //no EBO, colocamos os indices
 
     //positions
-    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,5*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
+    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,8*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
     glEnableVertexAttribArray(0);
 
     //colors
@@ -395,8 +405,11 @@ float vertices3[] = {
     //glEnableVertexAttribArray(1);
 
     //texture
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(5*sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -413,7 +426,7 @@ float vertices3[] = {
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);     //no EBO, colocamos os indices
 
     //positions
-    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,5*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
+    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,8*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
     glEnableVertexAttribArray(0);
 
     //colors
@@ -421,8 +434,11 @@ float vertices3[] = {
     //glEnableVertexAttribArray(1);
 
     //texture
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(5*sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -440,7 +456,7 @@ float vertices3[] = {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
 
     int width, height, nrChannels;
-    const std::string filename("C://Users//paulo//Desktop//Maze//brickWall.jpg");
+    const std::string filename("C://Users//mjwille//Downloads//Maze-OpenGL-master//brickWall.jpg");
     unsigned char *data = stbi_load(filename.c_str(),&width, &height, &nrChannels, 0);
 
     if(!data)
@@ -464,7 +480,7 @@ float vertices3[] = {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
 
     int width2, height2, nrChannels2;
-    const std::string filename2("C://Users//paulo//Desktop//Maze//greenGrass.jpg");
+    const std::string filename2("C://Users//mjwille//Downloads//Maze-OpenGL-master//greenGrass.jpg");
     unsigned char *data2 = stbi_load(filename2.c_str(),&width2, &height2, &nrChannels2, 0);
 
     if(!data2)
@@ -480,6 +496,7 @@ float vertices3[] = {
     unsigned int modelLocation = glGetUniformLocation(shaderProgram, "modelShader");
     unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewShader");
     unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionShader");
+    unsigned int id_object_location = glGetUniformLocation(shaderProgram, "id_object");
 
     //para a matriz model, definimos vários vetores de translação. O número de translações que denenharemos a partir de índices será o número de cubos na tela
     const int SIZE_CUBE_MODELS = 59;
@@ -663,7 +680,7 @@ float vertices3[] = {
         // com x, por fim, dá o vetor y da câmera. Essa função lookAt faz tudo isso para nós, e ainda podemos especificar o ponto alvo da câmera.
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
 
-        //glUniform1i(id_object,0);    // passa o id_object do muro (ver fragment shader)
+        glUniform1i(id_object_location,0);    // passa o id_object do muro (ver fragment shader)
 
         glBindVertexArray(VAO);
         for(int i = 0; i < 59; i++) {
@@ -704,7 +721,7 @@ float vertices3[] = {
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindTexture(GL_TEXTURE_2D, TextureGround);
 
-        //glUniform1i(id_object, 1);    // passa o id do chão  (ver fragment shader)
+        glUniform1i(id_object_location,1);    // passa o id_object do muro (ver fragment shader)
 
         glBindVertexArray(VAO4);
         glm::mat4 model;
@@ -790,7 +807,7 @@ void mouse_callback(GLFWwindow *window, double currentXposition, double currentY
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
     yaw += xoffset;
-    // pitch += yoffset;    // atualizamos os valores de pitch e yaw
+    //pitch += yoffset;    // atualizamos os valores de pitch e yaw
 
     //agora limitamos ao usuário olhar para cima até 89 graus e -89 graus (quando chegamos em 90 e -90, a visão tende a se inverter e ficar estranha)
     if(pitch > 89.0f)
