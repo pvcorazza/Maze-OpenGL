@@ -42,6 +42,8 @@ float yaw = -90.0f;
 bool firstMouse = true;
 float fov = 45.0f;       // fov = field of view
 
+glm::vec3 lightSource(10.0f, 10.0f, -10.0f);
+
 //dint id_object;    // para a uniform do fragment shader
 
 const char *vertexShaderSource = "#version 330 core \n"
@@ -51,6 +53,7 @@ const char *vertexShaderSource = "#version 330 core \n"
 "layout (location = 2) in vec3 normalVec; \n"
 //"out vec3 finalColor; \n"
 "out vec3 normal; \n"
+"out vec3 FragmentPosition; \n"
 "out vec2 finalTex; \n"
 "\n"
 "uniform mat4 modelShader; \n"
@@ -58,30 +61,36 @@ const char *vertexShaderSource = "#version 330 core \n"
 "uniform mat4 projectionShader; \n"
 "void main(){ \n"
 "   gl_Position = projectionShader * viewShader * modelShader * vec4(position.x, position.y, position.z, 1.0); \n"
+"   FragmentPosition = vec3(modelShader * vec4(position.x,position.y,position.z,1.0)); \n"
 "   normal = normalVec; \n"
-//"   finalColor = inColor; \n"
 "   finalTex = inTex; \n"
+//"   finalColor = inColor; \n"
 "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
-//"in vec3 finalColor; \n"
 "in vec2 finalTex;   \n"
 "in vec3 normal;     \n"
+"in vec3 FragmentPosition; \n"
+//"in vec3 finalColor; \n"
 "out vec4 FragColor; \n"
 "uniform sampler2D TEX; \n"
 "uniform vec3 lightPosition; \n"
 "uniform int id_object; \n"
 "void main(){ \n"
 "\n"
-"    if(id_object == 0) { \n"      // se for muro
-"       FragColor = vec4(0.0f,0.0f,0.0f,1.0f); \n"
-"    }"
+"    vec3 normalizedNormal = normalize(normal); \n"                                                 // normalizamos o vetor normal
+"    vec3 lightVector = normalize(lightPosition - FragmentPosition); \n"             // fazemos a subtração da posição da fonte de luz pela do fragmento para ter o vetor correspondente
+"    float cosAngle = max(dot(normalizedNormal,lightVector), 0.0); \n"               // não precisa dividir pelas normais pois já estão normalizados
 "\n"
-"    else if(id_object == 1) { \n"
-"       FragColor = vec4(1.0f,1.0f,1.0f,1.0f); \n"
-"    }"
+"    if(id_object == 0) { \n"                          // se for muro
+"       FragColor = vec4(0.1f,0.1f,0.1f,1.0f); \n"
+"    } \n"
 "\n"
-"    FragColor += texture(TEX, finalTex) * vec4(0.1f,0.1f,0.1f,1.0f); \n" //* vec4(finalColor.x+0.5, finalColor.y+0.5, finalColor.z+0.5, 1.0f); \n"
+"    else if(id_object == 1) { \n"                    // se for chão
+"       FragColor = vec4(0.1f,0.1f,0.1f,1.0f); \n"
+"    } \n"
+"\n"
+"    FragColor += texture(TEX, finalTex) * vec4(0.1f,0.1f,0.1f,1.0f) * cosAngle; \n" //* vec4(finalColor.x+0.5, finalColor.y+0.5, finalColor.z+0.5, 1.0f); \n"
 "}\0";
 
 int main() {
@@ -497,6 +506,7 @@ float vertices3[] = {
     unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewShader");
     unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionShader");
     unsigned int id_object_location = glGetUniformLocation(shaderProgram, "id_object");
+    unsigned int light_source_location = glGetUniformLocation(shaderProgram, "lightPosition");
 
     //para a matriz model, definimos vários vetores de translação. O número de translações que denenharemos a partir de índices será o número de cubos na tela
     const int SIZE_CUBE_MODELS = 59;
@@ -659,6 +669,8 @@ float vertices3[] = {
         glBindTexture(GL_TEXTURE_2D, Texture);   // precisa fazer bind da textura antes de desenhar na tela
 
         glUseProgram(shaderProgram);
+
+        glUniform3fv(light_source_location,1,glm::value_ptr(lightSource));    // PROBLEMA PODE ESTAR AQUI!  Coloca a uniform da posição da câmera
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);                    // elements vem de "Element Buffer Object (EBO)". Queremos desenhar tendo como base os vértices
