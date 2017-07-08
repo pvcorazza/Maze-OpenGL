@@ -1,0 +1,626 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="97">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="include">
+        <df name="glad">
+          <in>glad.h</in>
+        </df>
+        <df name="GLFW">
+          <in>glfw3.h</in>
+          <in>glfw3native.h</in>
+        </df>
+        <df name="glm">
+          <df name="detail">
+            <in>_features.hpp</in>
+            <in>_fixes.hpp</in>
+            <in>_noise.hpp</in>
+            <in>_swizzle.hpp</in>
+            <in>_swizzle_func.hpp</in>
+            <in>_vectorize.hpp</in>
+            <in>dummy.cpp</in>
+            <in>func_common.hpp</in>
+            <in>func_exponential.hpp</in>
+            <in>func_geometric.hpp</in>
+            <in>func_integer.hpp</in>
+            <in>func_matrix.hpp</in>
+            <in>func_packing.hpp</in>
+            <in>func_trigonometric.hpp</in>
+            <in>func_vector_relational.hpp</in>
+            <in>glm.cpp</in>
+            <in>precision.hpp</in>
+            <in>setup.hpp</in>
+            <in>type_float.hpp</in>
+            <in>type_gentype.hpp</in>
+            <in>type_half.hpp</in>
+            <in>type_int.hpp</in>
+            <in>type_mat.hpp</in>
+            <in>type_mat2x2.hpp</in>
+            <in>type_mat2x3.hpp</in>
+            <in>type_mat2x4.hpp</in>
+            <in>type_mat3x2.hpp</in>
+            <in>type_mat3x3.hpp</in>
+            <in>type_mat3x4.hpp</in>
+            <in>type_mat4x2.hpp</in>
+            <in>type_mat4x3.hpp</in>
+            <in>type_mat4x4.hpp</in>
+            <in>type_vec.hpp</in>
+            <in>type_vec1.hpp</in>
+            <in>type_vec2.hpp</in>
+            <in>type_vec3.hpp</in>
+            <in>type_vec4.hpp</in>
+          </df>
+          <df name="gtc">
+            <in>bitfield.hpp</in>
+            <in>color_space.hpp</in>
+            <in>constants.hpp</in>
+            <in>epsilon.hpp</in>
+            <in>functions.hpp</in>
+            <in>integer.hpp</in>
+            <in>matrix_access.hpp</in>
+            <in>matrix_integer.hpp</in>
+            <in>matrix_inverse.hpp</in>
+            <in>matrix_transform.hpp</in>
+            <in>noise.hpp</in>
+            <in>packing.hpp</in>
+            <in>quaternion.hpp</in>
+            <in>random.hpp</in>
+            <in>reciprocal.hpp</in>
+            <in>round.hpp</in>
+            <in>type_aligned.hpp</in>
+            <in>type_precision.hpp</in>
+            <in>type_ptr.hpp</in>
+            <in>ulp.hpp</in>
+            <in>vec1.hpp</in>
+          </df>
+          <df name="gtx">
+            <in>associated_min_max.hpp</in>
+            <in>bit.hpp</in>
+            <in>closest_point.hpp</in>
+            <in>color_space.hpp</in>
+            <in>color_space_YCoCg.hpp</in>
+            <in>common.hpp</in>
+            <in>compatibility.hpp</in>
+            <in>component_wise.hpp</in>
+            <in>dual_quaternion.hpp</in>
+            <in>euler_angles.hpp</in>
+            <in>extend.hpp</in>
+            <in>extended_min_max.hpp</in>
+            <in>fast_exponential.hpp</in>
+            <in>fast_square_root.hpp</in>
+            <in>fast_trigonometry.hpp</in>
+            <in>gradient_paint.hpp</in>
+            <in>handed_coordinate_space.hpp</in>
+            <in>hash.hpp</in>
+            <in>integer.hpp</in>
+            <in>intersect.hpp</in>
+            <in>io.hpp</in>
+            <in>log_base.hpp</in>
+            <in>matrix_cross_product.hpp</in>
+            <in>matrix_decompose.hpp</in>
+            <in>matrix_interpolation.hpp</in>
+            <in>matrix_major_storage.hpp</in>
+            <in>matrix_operation.hpp</in>
+            <in>matrix_query.hpp</in>
+            <in>matrix_transform_2d.hpp</in>
+            <in>mixed_product.hpp</in>
+            <in>norm.hpp</in>
+            <in>normal.hpp</in>
+            <in>normalize_dot.hpp</in>
+            <in>number_precision.hpp</in>
+            <in>optimum_pow.hpp</in>
+            <in>orthonormalize.hpp</in>
+            <in>perpendicular.hpp</in>
+            <in>polar_coordinates.hpp</in>
+            <in>projection.hpp</in>
+            <in>quaternion.hpp</in>
+            <in>range.hpp</in>
+            <in>raw_data.hpp</in>
+            <in>rotate_normalized_axis.hpp</in>
+            <in>rotate_vector.hpp</in>
+            <in>scalar_multiplication.hpp</in>
+            <in>scalar_relational.hpp</in>
+            <in>simd_mat4.hpp</in>
+            <in>simd_quat.hpp</in>
+            <in>simd_vec4.hpp</in>
+            <in>spline.hpp</in>
+            <in>std_based_type.hpp</in>
+            <in>string_cast.hpp</in>
+            <in>transform.hpp</in>
+            <in>transform2.hpp</in>
+            <in>type_aligned.hpp</in>
+            <in>type_trait.hpp</in>
+            <in>vector_angle.hpp</in>
+            <in>vector_query.hpp</in>
+            <in>wrap.hpp</in>
+          </df>
+          <df name="simd">
+            <in>common.h</in>
+            <in>exponential.h</in>
+            <in>geometric.h</in>
+            <in>integer.h</in>
+            <in>matrix.h</in>
+            <in>packing.h</in>
+            <in>platform.h</in>
+            <in>trigonometric.h</in>
+            <in>vector_relational.h</in>
+          </df>
+          <in>common.hpp</in>
+          <in>exponential.hpp</in>
+          <in>ext.hpp</in>
+          <in>fwd.hpp</in>
+          <in>geometric.hpp</in>
+          <in>glm.hpp</in>
+          <in>integer.hpp</in>
+          <in>mat2x2.hpp</in>
+          <in>mat2x3.hpp</in>
+          <in>mat2x4.hpp</in>
+          <in>mat3x2.hpp</in>
+          <in>mat3x3.hpp</in>
+          <in>mat3x4.hpp</in>
+          <in>mat4x2.hpp</in>
+          <in>mat4x3.hpp</in>
+          <in>mat4x4.hpp</in>
+          <in>matrix.hpp</in>
+          <in>packing.hpp</in>
+          <in>trigonometric.hpp</in>
+          <in>vec2.hpp</in>
+          <in>vec3.hpp</in>
+          <in>vec4.hpp</in>
+          <in>vector_relational.hpp</in>
+        </df>
+        <df name="KHR">
+          <in>khrplatform.h</in>
+        </df>
+        <in>dejavufont.h</in>
+        <in>matrices.h</in>
+        <in>stb_image.h</in>
+        <in>utils.h</in>
+      </df>
+      <df name="src">
+        <in>glad.c</in>
+        <in>main.cpp</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Arquivos Importantes"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>bin\Release\main.exe</executablePath>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="include/GLFW/glfw3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/GLFW/glfw3native.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/KHR/khrplatform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/dejavufont.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glad/glad.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/common.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/_features.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/_fixes.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/_noise.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/_swizzle.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/_swizzle_func.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/_vectorize.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/dummy.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_common.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_exponential.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_geometric.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_integer.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_matrix.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_packing.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_trigonometric.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/func_vector_relational.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/glm.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="include/glm/detail/precision.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/setup.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_float.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_gentype.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_half.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_int.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat2x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat2x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat2x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat3x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat3x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat3x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat4x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat4x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_mat4x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_vec.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_vec1.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_vec2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_vec3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/detail/type_vec4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/exponential.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/ext.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/fwd.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/geometric.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/glm.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/bitfield.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/color_space.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/constants.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/epsilon.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/functions.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/integer.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/matrix_access.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/matrix_integer.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/matrix_inverse.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/matrix_transform.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtc/noise.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/packing.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/quaternion.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/random.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/reciprocal.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/round.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/type_aligned.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/type_precision.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/type_ptr.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/ulp.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtc/vec1.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/associated_min_max.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/bit.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/closest_point.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/color_space.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/color_space_YCoCg.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/common.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/compatibility.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/component_wise.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/dual_quaternion.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/euler_angles.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/extend.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/extended_min_max.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/fast_exponential.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/fast_square_root.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/fast_trigonometry.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/gradient_paint.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/handed_coordinate_space.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/hash.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/integer.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/intersect.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/io.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/log_base.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_cross_product.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_decompose.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_interpolation.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_major_storage.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_operation.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_query.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/matrix_transform_2d.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/mixed_product.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/norm.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/normal.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/normalize_dot.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/number_precision.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/optimum_pow.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/orthonormalize.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/perpendicular.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/polar_coordinates.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/projection.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/quaternion.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/range.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/raw_data.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/rotate_normalized_axis.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/rotate_vector.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/scalar_multiplication.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/scalar_relational.hpp"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/gtx/simd_mat4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/simd_quat.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/simd_vec4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/spline.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/std_based_type.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/string_cast.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/transform.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/transform2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/type_aligned.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/type_trait.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/vector_angle.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/vector_query.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/gtx/wrap.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/integer.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat2x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat2x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat2x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat3x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat3x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat3x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat4x2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat4x3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/mat4x4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/matrix.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/packing.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/common.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/exponential.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/geometric.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/integer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/matrix.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/packing.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/platform.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/trigonometric.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/simd/vector_relational.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="include/glm/trigonometric.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/vec2.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/vec3.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/vec4.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/glm/vector_relational.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/matrices.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/stb_image.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/glad.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
