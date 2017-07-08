@@ -17,6 +17,7 @@ void mouse_callback(GLFWwindow *window, double xposition, double yposition);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void key_callback_close_window(GLFWwindow *window);
 bool collision_callback(struct BBox positions[], glm::vec3 cameraFuturePosition);
+void showResult_callback(int result);
 
 struct BBox{
 
@@ -28,11 +29,13 @@ struct BBox{
 };
 
 glm::vec3 cameraPosition = glm::vec3(0.0f,0.25f,-0.5f);
-glm::vec3 cameraFront = glm::vec3(1.0f,0.0f,0.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
 float deltaTime = 0.0f;
 float timeLastFrame = 0.0f;
 float timeCurrentFrame = 0.0f;
+
+float timeToComplete = 60.0;
 
 // posições default do cursor do mouse são a metade de cada tamanho da tela
 float lastXposition = WIDTH/2.0;
@@ -41,6 +44,8 @@ float pitch = 0.0f;
 float yaw = -90.0f;
 bool firstMouse = true;
 float fov = 45.0f;       // fov = field of view
+
+glm::vec3 lightSource(10.0f, 10.0f, -10.0f);
 
 //dint id_object;    // para a uniform do fragment shader
 
@@ -51,6 +56,7 @@ const char *vertexShaderSource = "#version 330 core \n"
 "layout (location = 2) in vec3 normalVec; \n"
 //"out vec3 finalColor; \n"
 "out vec3 normal; \n"
+"out vec3 FragmentPosition; \n"
 "out vec2 finalTex; \n"
 "\n"
 "uniform mat4 modelShader; \n"
@@ -58,30 +64,59 @@ const char *vertexShaderSource = "#version 330 core \n"
 "uniform mat4 projectionShader; \n"
 "void main(){ \n"
 "   gl_Position = projectionShader * viewShader * modelShader * vec4(position.x, position.y, position.z, 1.0); \n"
+"   FragmentPosition = vec3(modelShader * vec4(position.x,position.y,position.z,1.0)); \n"
 "   normal = normalVec; \n"
-//"   finalColor = inColor; \n"
 "   finalTex = inTex; \n"
+//"   finalColor = inColor; \n"
 "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
-//"in vec3 finalColor; \n"
 "in vec2 finalTex;   \n"
 "in vec3 normal;     \n"
+"in vec3 FragmentPosition; \n"
+//"in vec3 finalColor; \n"
 "out vec4 FragColor; \n"
 "uniform sampler2D TEX; \n"
+"uniform int isSky; \n"
 "uniform vec3 lightPosition; \n"
+"uniform vec3 cameraPos; \n"
+"uniform vec3 cameraDir; \n"
 "uniform int id_object; \n"
 "void main(){ \n"
+"\n" // para iluminação difusa:
+"    if(isSky == 0) { \n"
+"       vec3 normalizedNormal = normalize(normal); \n"                                                 // normalizamos o vetor normal
+"       vec3 lightVector = normalize(cameraPos - FragmentPosition); \n"             // fazemos a subtração da posição da fonte de luz pela do fragmento para ter o vetor de luz
+"       float cosAngle = max(dot(normalizedNormal,lightVector), 0.0); \n"               // não precisa dividir pelas normais pois já estão normalizados
+"\n"    // para iluminação especular:
+/*
+"       vec3 viewerDirection = normalize(cameraPos - FragmentPosition); \n"             // vetor do ponto onde bate o raio e o visualizador
+"       vec3 rVector = reflect(-lightVector, normalizedNormal); \n"                     // vetor de reflexão
+//"       float alfaAngle = max(dot(viewerDirection, rVector),0.0); \n"                       // pegamos o ângulo entre os 2 vetores definidos nas 2 linhas anteriores
+//"       vec3 specular = 0.5 * alfaAngle * vec3(0.2f,0.2f,0.2f); \n"
+//"\n"    // para a luz spotlight
+*/
+"       float attenuation = 1.0; \n"
+"       vec3 coneDirection = normalize(cameraDir); \n"
+"       float angleSpotlight = degrees(acos(dot(-lightVector, coneDirection))); \n"    // ângulo entre a direção que vai do centro do cone e a direção que vai do fragmento em questão para o centro do cone
+"       if(angleSpotlight > 10.0f) \n"  // onde 15.0 é o ângulo do cone
+"           attenuation = 1000.0/(angleSpotlight * angleSpotlight * angleSpotlight);"   // PARA BOTAR TEMPO, É SÓ FAZER ESSE VALOR DE 1000 BAIXAR E TAMBÉM O 10.0 DO IF PRECISA SER EM FUNÇÃO DELE
+"\n"    // ambiente para cada objeto
+"       if(id_object == 0) { \n"                          // se for muro
+"           FragColor = vec4(0.1f,0.1f,0.1f,1.0f); \n"     // cor ambiente para o objeto
+"       } \n"
 "\n"
-"    if(id_object == 0) { \n"      // se for muro
-"       FragColor = vec4(0.0f,0.0f,0.0f,1.0f); \n"
-"    }"
+"       else if(id_object == 1) { \n"                    // se for chão
+"           FragColor = vec4(0.1f,0.1f,0.1f,1.0f); \n"    // cor ambiente para o objeto
+"       } \n"
 "\n"
-"    else if(id_object == 1) { \n"
-"       FragColor = vec4(1.0f,1.0f,1.0f,1.0f); \n"
-"    }"
+"       FragColor += attenuation * vec4(0.2f,0.2f,0.2f,1.0f) * texture(TEX, finalTex) *  cosAngle; \n"   // * vec4(specular,1.0f)
+//       cor final =   SPOTLIGHT!   espectro da luz (noite!)        cor do objeto     ângulo (produto interno de cima)       E ainda tem mais o ambiente que é setado para cada id_object acima e somado com isto
+"   } \n"
+"   if(isSky == 1) { \n"
+"     FragColor = texture(TEX, finalTex); \n"
+"   }"
 "\n"
-"    FragColor += texture(TEX, finalTex) * vec4(0.1f,0.1f,0.1f,1.0f); \n" //* vec4(finalColor.x+0.5, finalColor.y+0.5, finalColor.z+0.5, 1.0f); \n"
 "}\0";
 
 int main() {
@@ -273,7 +308,7 @@ float vertices3[] = {
        -0.075f,  0.5f, -0.25f,  0.0f, 1.0f, 0.0f, 1.0f, 0.0f
 };
 
- float vertices4[] = {
+ float vertices4[] = {     // chão
 
     //traseira
        -40.5f, -0.01f, -40.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
@@ -317,6 +352,51 @@ float vertices3[] = {
         40.5f,  0.01f,  40.5f,  100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
        -40.5f,  0.01f,  40.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
        -40.5f,  0.01f, -40.5f,  0.0f, 100.0f, 0.0f, 1.0f, 0.0f
+};
+
+float vertices5[] = {                 // sky
+
+       -300.5f, -0.01f, -300.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        300.5f, -0.01f, -300.5f,  400.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+        300.5f,  0.01f, -300.5f,  400.0f, 400.0f, 0.0f, 0.0f, -1.0f,
+        300.5f,  0.01f, -300.5f,  400.0f, 400.0f, 0.0f, 0.0f, -1.0f,
+       -300.5f,  0.01f, -300.5f,  0.0f, 400.0f, 0.0f, 0.0f, -1.0f,
+       -300.5f, -0.01f, -300.5f,  0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+       -300.5f, -0.01f,  300.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        300.5f, -0.01f,  300.5f,  400.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+        300.5f,  0.01f,  300.5f,  400.0f, 400.0f, 0.0f, 0.0f, 1.0f,
+        300.5f,  0.01f,  300.5f,  400.0f, 400.0f, 0.0f, 0.0f, 1.0f,
+       -300.5f,  0.01f,  300.5f,  0.0f, 400.0f, 0.0f, 0.0f, 1.0f,
+       -300.5f, -0.01f,  300.5f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+
+       -300.5f,  0.01f,  300.5f,  400.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -300.5f,  0.01f, -300.5f,  400.0f, 400.0f, -1.0f, 0.0f, 0.0f,
+       -300.5f, -0.01f, -300.5f,  0.0f, 400.0f, -1.0f, 0.0f, 0.0f,
+       -300.5f, -0.01f, -300.5f,  0.0f, 400.0f, -1.0f, 0.0f, 0.0f,
+       -300.5f, -0.01f,  300.5f,  0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+       -300.5f,  0.01f,  300.5f,  400.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+
+        300.5f,  0.01f,  300.5f,  400.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        300.5f,  0.01f, -300.5f,  400.0f, 400.0f, 1.0f, 0.0f, 0.0f,
+        300.5f, -0.01f, -300.5f,  0.0f, 400.0f, 1.0f, 0.0f, 0.0f,
+        300.5f, -0.01f, -300.5f,  0.0f, 400.0f, 1.0f, 0.0f, 0.0f,
+        300.5f, -0.01f,  300.5f,  0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        300.5f,  0.01f,  300.5f,  400.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+
+       -300.5f, -0.01f, -300.5f,  0.0f, 400.0f, 0.0f, -1.0f, 0.0f,
+        300.5f, -0.01f, -300.5f,  400.0f, 400.0f, 0.0f, -1.0f, 0.0f,
+        300.5f, -0.01f,  300.5f,  400.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+        300.5f, -0.01f,  300.5f,  400.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -300.5f, -0.01f,  300.5f,  0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+       -300.5f, -0.01f, -300.5f,  0.0f, 400.0f, 0.0f, -1.0f, 0.0f,
+
+       -300.5f,  0.01f, -300.5f,  0.0f, 400.0f, 0.0f, 1.0f, 0.0f,
+        300.5f,  0.01f, -300.5f,  400.0f, 400.0f, 0.0f, 1.0f, 0.0f,
+        300.5f,  0.01f,  300.5f,  400.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        300.5f,  0.01f,  300.5f,  400.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -300.5f,  0.01f,  300.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       -300.5f,  0.01f, -300.5f,  0.0f, 400.0f, 0.0f, 1.0f, 0.0f
 };
 
     /*
@@ -443,6 +523,35 @@ float vertices3[] = {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    unsigned int VAO5, VBO5;// EBO;
+    glGenVertexArrays(1,&VAO5);    //cria um VAO
+    glGenBuffers(1,&VBO5);         //cria um VBO
+    //glGenBuffers(1,&EBO);         //cria um EBO (para armazenar os indices)
+
+    glBindVertexArray(VAO5);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO5);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices5), vertices5, GL_STATIC_DRAW);           //no VBO, colocamos os vértices
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);     //no EBO, colocamos os indices
+
+    //positions
+    glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE,8*sizeof(float),(void*)0);            //como o VAO interpretará o VBO atualmente "bound" em location 0
+    glEnableVertexAttribArray(0);
+
+    //colors
+    //glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));        //como o VAO interpretará o VBO atualmente "bound" em location 1 (primeiro atributo passado como parâmetro)
+    //glEnableVertexAttribArray(1);
+
+    //texture
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(5*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     ///textures
 
     unsigned int Texture;
@@ -456,7 +565,7 @@ float vertices3[] = {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
 
     int width, height, nrChannels;
-    const std::string filename("C://Users//mjwille//Downloads//Maze-OpenGL-master//brickWall.jpg");
+    const std::string filename("..//..//brickWall.jpg");
     unsigned char *data = stbi_load(filename.c_str(),&width, &height, &nrChannels, 0);
 
     if(!data)
@@ -480,7 +589,7 @@ float vertices3[] = {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
 
     int width2, height2, nrChannels2;
-    const std::string filename2("C://Users//mjwille//Downloads//Maze-OpenGL-master//greenGrass.jpg");
+    const std::string filename2("..//..//greenGrass.jpg");
     unsigned char *data2 = stbi_load(filename2.c_str(),&width2, &height2, &nrChannels2, 0);
 
     if(!data2)
@@ -491,12 +600,38 @@ float vertices3[] = {
 
     stbi_image_free(data2);
 
+    unsigned int TextureDarkSky;
+    glGenTextures(1,&TextureDarkSky);
+    glBindTexture(GL_TEXTURE_2D, TextureDarkSky);
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);       //texture wrapping
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);   //texture filtering
+
+    int width3, height3, nrChannels3;
+    const std::string filename3("..//..//nightSky.jpg");
+    unsigned char *data3 = stbi_load(filename3.c_str(),&width3, &height3, &nrChannels3, 0);
+
+    if(!data3)
+        std::cout << "Failed to load texture!";
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width3,height3,0,GL_RGB,GL_UNSIGNED_BYTE,data3);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data3);
+
     ///textures end
 
     unsigned int modelLocation = glGetUniformLocation(shaderProgram, "modelShader");
     unsigned int viewLocation = glGetUniformLocation(shaderProgram, "viewShader");
     unsigned int projectionLocation = glGetUniformLocation(shaderProgram, "projectionShader");
     unsigned int id_object_location = glGetUniformLocation(shaderProgram, "id_object");
+    unsigned int light_source_location = glGetUniformLocation(shaderProgram, "lightPosition");
+    unsigned int camera_position_location = glGetUniformLocation(shaderProgram, "cameraPos");
+    unsigned int camera_direction_location = glGetUniformLocation(shaderProgram, "cameraDir");
+    unsigned int isSky_location = glGetUniformLocation(shaderProgram, "isSky");
 
     //para a matriz model, definimos vários vetores de translação. O número de translações que denenharemos a partir de índices será o número de cubos na tela
     const int SIZE_CUBE_MODELS = 59;
@@ -645,8 +780,19 @@ float vertices3[] = {
     while(!glfwWindowShouldClose(window)) {
 
         timeCurrentFrame = glfwGetTime();
+        printf("t = %.3f\n", timeCurrentFrame);
         deltaTime = timeCurrentFrame - timeLastFrame;     //modificamos o tempo delta, para que computadores com diferente FPS tenham a mesma velocidade
         timeLastFrame = timeCurrentFrame;
+
+        if(cameraPosition.z < -8.579) {
+            showResult_callback(1);
+            glfwSetWindowShouldClose(window, true);
+        }
+
+        if(timeCurrentFrame > timeToComplete && cameraPosition.z >= -8.579) {
+            showResult_callback(0);
+            glfwSetWindowShouldClose(window, true);
+        }
 
         //processa input
         key_callback_close_window(window);
@@ -659,6 +805,12 @@ float vertices3[] = {
         glBindTexture(GL_TEXTURE_2D, Texture);   // precisa fazer bind da textura antes de desenhar na tela
 
         glUseProgram(shaderProgram);
+
+
+        glUniform1i(isSky_location, 0);
+        glUniform3fv(light_source_location,1,glm::value_ptr(lightSource));    // coloca a uniform na posição da fonte de luz
+        glUniform3fv(camera_position_location,1,glm::value_ptr(cameraPosition));   // coloca a uniform na posição do visualizador (câmera)
+        glUniform3fv(camera_direction_location,1,glm::value_ptr(cameraFront));   // coloca a uniform da direção da luz (para o spotlight, isso significa a câmera
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);                    // elements vem de "Element Buffer Object (EBO)". Queremos desenhar tendo como base os vértices
@@ -730,8 +882,22 @@ float vertices3[] = {
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES,0,36);
 
-        glBindVertexArray(VAO4);
+        glBindVertexArray(0);
+
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        glBindTexture(GL_TEXTURE_2D, TextureDarkSky);
+        glUniform1i(isSky_location, 1);
+
+        glBindVertexArray(VAO5);
+        glm::mat4 othermodel;
+        othermodel = glm::translate(othermodel, glm::vec3(0.0f, 1.0f, 0.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(othermodel));
+        glDrawArrays(GL_TRIANGLES,0,36);
+
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
 
         ///rendering end here...
         glfwSwapBuffers(window);
@@ -748,7 +914,7 @@ float vertices3[] = {
 
 void key_callback_camera_movement(GLFWwindow *window, struct BBox positions[]) {
 
-    float cameraSpeed = 1.0f * deltaTime;
+    float cameraSpeed = 0.8f * deltaTime;
     glm::vec3 cameraFuturePosition = cameraPosition;
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         cameraFuturePosition += cameraSpeed * cameraFront;
@@ -836,4 +1002,25 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 void key_callback_close_window(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void showResult_callback(int result) {
+
+    if(result == 1) {
+         printf("__     ______  _    _  __          _______ _   _ _ \n");
+        printf("\ \   / / __ \| |  | | \ \        / /_   _| \ | | |\n");
+        printf(" \ \_/ / |  | | |  | |  \ \  /\  / /  | | |  \| | |\n");
+        printf("  \   /| |  | | |  | |   \ \/  \/ /   | | | . ` | |\n");
+        printf("   | | | |__| | |__| |    \  /\  /   _| |_| |\  |_|\n");
+        printf("   |_|  \____/ \____/      \/  \/   |_____|_| \_(_)\n");
+    }
+
+    if(result == 0) {
+        printf("__     ______  _    _   _      ____   _____ ______ _ \n");
+        printf(" \ \   / / __ \| |  | | | |    / __ \ / ____|  ____| |\n");
+        printf("  \ \_/ / |  | | |  | | | |   | |  | | (___ | |__  | |\n");
+        printf("  \   /| |  | | |  | | | |   | |  | |\___ \|  __| | |\n");
+        printf("   | | | |__| | |__| | | |___| |__| |____) | |____|_|\n");
+        printf("   |_|  \____/ \____/  |______\____/|_____/|______(_)\n");
+    }
 }
